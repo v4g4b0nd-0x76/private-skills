@@ -1,0 +1,44 @@
+# Isolated bug-bounty lab.
+#
+# Safety properties (do not remove):
+#   1. `internal: true` network: no route to the internet from any container.
+#   2. No `ports:` publishing: targets are reachable only inside `arena`.
+#   3. Hunters address targets by service name, never localhost.
+
+services:
+  juice-shop:
+    image: bkimminich/juice-shop:v19.2.0
+    container_name: arena_juice_shop
+    networks: [arena]
+    # deliberately no ports:
+
+  dvwa:
+    image: vulnerables/web-dvwa:latest
+    container_name: arena_dvwa
+    networks: [arena]
+
+  webgoat:
+    image: webgoat/webgoat:latest
+    container_name: arena_webgoat
+    environment:
+      - TZ=UTC
+    networks: [arena]
+
+  dvna:
+    image: appsecco/dvna:sqlite
+    container_name: arena_dvna
+    networks: [arena]
+
+  # A hunter-side workspace on the same network. Probes run from here so the
+  # attack traffic never leaves the isolated network.
+  hunter:
+    image: python:3.12-slim
+    container_name: arena_hunter
+    networks: [arena]
+    command: ["sleep", "infinity"]
+    depends_on: [juice-shop, dvwa]
+
+networks:
+  arena:
+    name: arena_net
+    internal: true

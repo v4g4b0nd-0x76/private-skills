@@ -219,6 +219,29 @@ used to. Three defenses:
    not inherit stale claims. A skill whose research is over a year old should be
    re-verified before being trusted.
 
+## 11. Offensive skills: lab isolation is a code requirement
+
+`bug-bounty-arena` hunts vulnerabilities. Any skill that attacks something must enforce
+its sandbox in code, not prose, because the failure mode is "we touched something real".
+
+Rules for offensive skills:
+
+- **Isolation is verified, not asserted.** `lab.sh --status` parses the compose file for
+  an *active* `internal: true` (ignoring comments — a comment mentioning it is not a
+  setting) and refuses published `ports:`. A false pass here is the worst bug the repo
+  can ship.
+- **Destructive techniques need a snapshot and an explicit arm.** Backup before breaking:
+  `--snapshot` then `--arm-destructive`. The recorder refuses destructive findings without
+  the arm file, and the judge rejects them if the arm is missing.
+- **Proof is an observed effect, not a status code.** The 2026 survey of false-positive
+  reduction found PoC validation is the only approach reaching zero false positives;
+  everything else filters heuristically.
+- **Never broaden the target.** No production, no third-party hosts, no host escape.
+  If the user asks to "test prod carefully", the answer is: copy it into the lab.
+- **Deduplicate by root cause.** Independent hunters converge; a report that lists the
+  same bug five times hides the real ones. Merge, credit every hunter, keep the strongest
+  evidence.
+
 ## Sources
 
 - [Agent Skills specification](https://agentskills.io/specification)
@@ -229,3 +252,5 @@ used to. Three defenses:
 - [mgechev/skills-best-practices](https://github.com/mgechev/skills-best-practices)
 - [mgechev/skillgrade](https://github.com/mgechev/skillgrade)
 - [Multi-agent orchestration patterns](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
+- [Reducing False Positives in Vulnerability Detection](https://oddsequence.com/research/reducing-false-positives)
+- [Docker pentesting lab isolation](https://blog.bogdancaraman.com/pentesting-lab-docker-vulnerable-web-apps/)

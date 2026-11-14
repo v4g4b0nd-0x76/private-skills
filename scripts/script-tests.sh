@@ -316,6 +316,90 @@ expect_exit 0 "installer supports native dirs"         bash "$INST" "$PROJ3" --a
 [ -d "$PROJ3/.codex/skills" ] && [ -d "$PROJ3/.cursor/skills" ] \
   && ok "explicit codex+cursor get separate dirs" || no "native dirs not separate"
 
+# ---------------------------------------------------------------------------
+section "arena: isolation guards, evidence gate, dedup"
+ARENA="$skills/bug-bounty-arena/scripts"
+AW="$work/arena-proj"; mkdir -p "$AW"; cd "$AW" || exit 1
+
+expect_exit 0 "arena lab init creates an isolated lab"  bash "$ARENA/lab.sh" demo --init
+expect_exit 0 "arena status verifies isolation"         bash "$ARENA/lab.sh" demo --status
+expect_exit 2 "arm destructive without snapshot refused" bash "$ARENA/lab.sh" demo --arm-destructive
+
+# A compose that publishes ports must be rejected.
+mkdir -p "$work/badlab/.arena/bad"
+sed -E 's|networks: \[arena\]|networks: [arena]\n    ports: ["3000:3000"]|' \
+  "$skills/bug-bounty-arena/assets/docker-compose.yml" > "$work/badlab/.arena/bad/docker-compose.yml"
+( cd "$work/badlab" && bash "$ARENA/lab.sh" bad --status >/dev/null 2>&1 )
+[ $? -eq 1 ] && ok "arena status rejects published host ports" || no "published ports not rejected"
+
+# A comment mentioning internal:true must not count as the real setting.
+mkdir -p "$work/cmtlab/.arena/cmt"
+printf 'services:\n  a:\n    image: x\nnetworks:\n  arena:\n    name: arena_net\n    # internal: true\n' \
+  > "$work/cmtlab/.arena/cmt/docker-compose.yml"
+( cd "$work/cmtlab" && bash "$ARENA/lab.sh" cmt --status >/dev/null 2>&1 )
+[ $? -eq 1 ] && ok "arena status ignores a commented-out internal setting" || no "comment-only isolation accepted"
+
+cd "$AW" || exit 1
+expect_exit 0 "arena spawns hunters" bash "$ARENA/arena.sh" demo --spawn a01-bola,a02-dup
+
+echo 'GET /basket/2 returned another user basket' > "$work/ev.txt"
+expect_exit 1 "confirmed finding without evidence refused" \
+  bash "$ARENA/arena.sh" demo --record a01-bola --class bola --severity high \
+       --endpoint "GET /basket/2" --title "no evidence" 
+
+expect_exit 0 "confirmed finding with evidence accepted" \
+  bash "$ARENA/arena.sh" demo --record a01-bola --class bola --severity high \
+       --endpoint "GET /basket/2" --title "Cross-user basket read" \
+       --evidence-file "$work/ev.txt" --fingerprint missing-owner-check
+expect_exit 0 "duplicate from second hunter accepted" \
+  bash "$ARENA/arena.sh" demo --record a02-dup --class bola --severity critical \
+       --endpoint "GET /basket/9/" --title "IDOR exposes baskets" \
+       --evidence-file "$work/ev.txt" --fingerprint missing-owner-check
+expect_exit 0 "destructive finding refused when unarmed" \
+  bash "$ARENA/arena.sh" demo --record a01-bola --class logic --severity high \
+       --status unverified --endpoint "DELETE /basket/1" --title "maybe"
+
+# Judge must merge the two into one and keep the endpoint-normalised fingerprint.
+expect_exit 0 "judge runs" bash "$ARENA/judge.sh" demo
+if python3 -c '
+import json,sys
+d=json.load(open(".arena/demo/judged.json"))
+c=d["canonical"]
+assert len(c)==1, f"expected 1 merged finding, got {len(c)}"
+assert c[0]["duplicate_count"]==1, "duplicate not counted"
+assert len(c[0]["confirmed_by"])==2, "both hunters not credited"
+' 2>/dev/null; then
+  ok "judge merges same root cause across hunters"
+else
+  no "judge did not merge duplicates correctly"
+fi
+
+# Different verb on the same path must NOT merge.
+expect_exit 0 "record different-verb finding" \
+  bash "$ARENA/arena.sh" demo --record a01-bola --class bola --severity high \
+       --endpoint "PATCH /basket/2" --title "Cross-user basket write" \
+       --evidence-file "$work/ev.txt" --fingerprint missing-owner-check
+expect_exit 0 "re-judge" bash "$ARENA/judge.sh" demo
+if python3 -c '
+import json
+d=json.load(open(".arena/demo/judged.json"))
+assert len(d["canonical"])==2, f"expected 2 (different verbs), got {len(d['canonical'])}"
+' 2>/dev/null; then
+  ok "judge keeps different verbs separate"
+else
+  no "judge collapsed different verbs"
+fi
+
+expect_exit 0 "report renders"           bash "$ARENA/report.sh" demo
+expect_exit 0 "arena check passes"       bash "$ARENA/check-arena.sh" demo
+
+# A live credential in the report must be caught.
+echo 'key = "AKIAIOSFODNN7EXAMPLE"' >> .arena/demo/report.md
+expect_exit 1 "arena check catches a live credential" bash "$ARENA/check-arena.sh" demo
+bash "$ARENA/report.sh" demo >/dev/null 2>&1
+
+cd "$repo_root" || exit 1
+
 echo ""
 echo "script tests: $pass passed, $fail failed"
 [ "$fail" -eq 0 ] || exit 1

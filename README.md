@@ -33,6 +33,7 @@ Add `--link` to symlink while iterating (edits here apply live), `--dry-run` to 
 | `rust-systems-perf` | cache-aware layout, lock contention, heap traffic, profiling and UB/race gates |
 | `backend-security-test` | adversarial authz/BOLA/logic testing, suite generation, report validation |
 | `thirdparty-e2e` | third-party inventory, E2E suites, load profiles, fault injection |
+| `bug-bounty-arena` | isolated lab, concurrent hunters by class, deduplicated judged report |
 
 ## Quality gates
 

@@ -1,0 +1,22 @@
+[
+  { "query": "we're about to launch and I need someone to try to break our checkout API - escalate my normal user to admin, read other people's invoices", "should_trigger": true },
+  { "query": "can you security test the backend? check if authorization is actually enforced on /api/orders and the admin routes", "should_trigger": true },
+  { "query": "I think our API lets one tenant read another tenant's data. write tests that prove it or disprove it", "should_trigger": true },
+  { "query": "map out where our API checks ownership and then generate attack tests for the gaps", "should_trigger": true },
+  { "query": "find IDOR bugs in our node backend and write pytest cases that exploit them", "should_trigger": true },
+  { "query": "test our business logic for abuse - can someone double-spend a coupon or approve their own refund?", "should_trigger": true },
+  { "query": "check if our error responses leak stack traces or db schema", "should_trigger": true },
+  { "query": "prove or disprove that a regular user can delete an admin's account via our REST API", "should_trigger": true },
+  { "query": "generate a suite of adversarial tests for our authentication and authorization layer", "should_trigger": true },
+
+  { "query": "our checkout silently returns 200 when the payment provider is down - I need E2E tests under load", "should_trigger": false },
+  { "query": "load test our API at steady, spike and soak and tell me where it breaks", "should_trigger": false },
+  { "query": "what third party services does this app call, and how does it behave if stripe is slow?", "should_trigger": false },
+  { "query": "write unit tests for my pricing logic, it's pure functions", "should_trigger": false },
+  { "query": "review this file for SQL injection", "should_trigger": false },
+  { "query": "help me set up pytest fixtures for our integration tests", "should_trigger": false },
+  { "query": "we need to add rate limiting to our API, how should I configure the middleware", "should_trigger": false },
+  { "query": "our React login form doesn't validate emails properly", "should_trigger": false },
+  { "query": "add CSRF tokens to our express forms", "should_trigger": false },
+  { "query": "can you explain what a race condition is", "should_trigger": false }
+]

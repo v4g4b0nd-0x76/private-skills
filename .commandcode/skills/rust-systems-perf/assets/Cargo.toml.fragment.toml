@@ -1,0 +1,52 @@
+# Copy the parts that apply into the project's Cargo.toml.
+# These settings are what make profiles readable and measurements meaningful.
+
+[profile.release]
+# Symbols for profilers without giving up optimization.
+debug = "line-tables-only"
+# Better inlining across crates; "fat" costs build time.
+lto = "thin"
+# Single codegen unit maximizes optimization at the cost of build parallelism.
+codegen-units = 1
+# Smaller binary and no unwind tables; remove if you rely on catch_unwind.
+panic = "abort"
+
+# Benchmarking needs the optimizer but not the aborts.
+[profile.bench]
+debug = "line-tables-only"
+lto = "thin"
+codegen-units = 1
+
+# Optional: faster heap under heavy allocation churn.
+#
+# [dependencies]
+# mimalloc = { version = "0.1", default-features = false }
+#
+# then in main.rs:
+# #[global_allocator]
+# static ALLOC: mimalloc::MiMalloc = mimalloc::MiMalloc;
+#
+# Note: dhat::Alloc and a custom global allocator cannot both be active.
+
+# Heap profiling feature (see assets/dhat-harness.rs)
+#
+# [dependencies]
+# dhat = { version = "0.3", optional = true }
+#
+# [features]
+# dhat-heap = ["dep:dhat"]
+
+# Cache-line padding helpers
+#
+# [dependencies]
+# crossbeam-utils = "0.8.22"
+
+# Small-collection optimization
+#
+# [dependencies]
+# smallvec = "1"
+
+# Concurrency interleaving tests
+#
+# [target.'cfg(loom)'.dependencies]
+# loom = "0.7"

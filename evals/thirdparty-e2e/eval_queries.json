@@ -1,0 +1,22 @@
+[
+  { "query": "what external services does this codebase depend on, and what breaks if each one is down?", "should_trigger": true },
+  { "query": "write end-to-end tests that hit our real providers in sandbox mode", "should_trigger": true },
+  { "query": "load test our app at steady state, a 10x spike, and a soak, and find what breaks", "should_trigger": true },
+  { "query": "my app calls stripe, sendgrid and twilio - I want tests that prove it degrades gracefully when they fail", "should_trigger": true },
+  { "query": "hunt for unexpected behaviour in our provider integration: retry storms, double charges, cached failures", "should_trigger": true },
+  { "query": "inventory every third party dependency with its rate limit and failure fallback", "should_trigger": true },
+  { "query": "use toxiproxy to simulate a slow payment provider while traffic is running", "should_trigger": true },
+  { "query": "end to end tests for production-like scenarios with different load levels", "should_trigger": true },
+  { "query": "test that our webhook handler is idempotent when the provider retries delivery", "should_trigger": true },
+
+  { "query": "try to escalate privileges through our API and read another user's data", "should_trigger": false },
+  { "query": "profile this rust binary and tell me where the heap allocations are", "should_trigger": false },
+  { "query": "write unit tests for my discount calculation function", "should_trigger": false },
+  { "query": "how do I add a health check endpoint", "should_trigger": false },
+  { "query": "review our terraform for security misconfigurations", "should_trigger": false },
+  { "query": "my playwright test is flaky, how do I make it deterministic", "should_trigger": false },
+  { "query": "set up CI to run our existing jest tests on every PR", "should_trigger": false },
+  { "query": "what's the difference between integration and E2E testing in theory", "should_trigger": false },
+  { "query": "fix the memory leak in this node process", "should_trigger": false },
+  { "query": "add pagination to our /api/items endpoint", "should_trigger": false }
+]

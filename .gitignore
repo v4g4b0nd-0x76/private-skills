@@ -1,0 +1,41 @@
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# These are installed into projects, not committed here.
+# The skills themselves live in .commandcode/skills/ and ARE committed.
+.thirdparty/
+.commandcode/taste/
+
+# Temporary artifacts produced by the gates
+*.log
+/tmp/
+.coverage-summary.json
+callgrind.out.*
+perf.data*
+dhat-heap.json
+
+# Python (used by generated test suites)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Node (used by k6 scripts if ever installed locally)
+node_modules/
+
+# Rust (used when testing rust-systems-perf)
+target/
+
+# Local overrides / secrets — never commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/

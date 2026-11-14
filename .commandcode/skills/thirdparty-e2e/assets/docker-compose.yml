@@ -1,0 +1,44 @@
+# WireMock (:8080) virtualizes providers you cannot run.
+# Toxiproxy (:8474) injects network faults deterministically.
+#
+#   docker compose -f .thirdparty/docker-compose.yml up -d
+#   docker compose -f .thirdparty/docker-compose.yml down
+
+services:
+  wiremock:
+    image: wiremock/wiremock:3.9.1
+    container_name: thirdparty-wiremock
+    ports:
+      - "8080:8080"
+    volumes:
+      # Drop recorded stubs here; one file or dir per provider.
+      - ./wiremock:/home/wiremock
+    command: ["--global-response-templating", "--verbose"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/__admin/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    container_name: thirdparty-toxiproxy
+    ports:
+      - "8474:8474"   # admin API
+      - "26379:26379" # example proxied port -> point the app here
+    # Bind only to localhost in dev; the admin API is unauthenticated by default
+    # and can create proxies to arbitrary upstreams.
+    command: ["-host", "0.0.0.0", "-config", "/config/toxiproxy.json"]
+    volumes:
+      - ./toxiproxy.json:/config/toxiproxy.json:ro
+    depends_on:
+      wiremock:
+        condition: service_healthy
+
+# Notes
+# - Point the application's provider base URL at the toxiproxy listen port
+#   (e.g. http://localhost:26379) so faults are injected without app changes.
+# - Never expose port 8474 to an untrusted network; set TOXIPROXY_AUTH_TOKEN
+#   if other machines can reach it.
+# - Add real dependency containers here as needed (postgres, redis, kafka) so
+#   integration tests run against the real engine, not an in-memory fake.

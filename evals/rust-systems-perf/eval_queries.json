@@ -1,0 +1,22 @@
+[
+  { "query": "this rust service is too slow under load - make it use the cpu cache properly and cut allocations", "should_trigger": true },
+  { "query": "we have false sharing between our two atomic counters, how do I confirm and fix it", "should_trigger": true },
+  { "query": "profile my rust binary for heap allocation sites and find the leaks", "should_trigger": true },
+  { "query": "reduce lock contention in this multithreaded rust code, we're using one global mutex", "should_trigger": true },
+  { "query": "my data structure is a Vec<Box<Node>> - restructure it for better cache locality", "should_trigger": true },
+  { "query": "set up coverage and miri and loom for our rust crate", "should_trigger": true },
+  { "query": "why is our rust service making so many syscalls under load", "should_trigger": true },
+  { "query": "hunt for concurrency bugs in this rust code before we ship it", "should_trigger": true },
+  { "query": "our rust app's memory keeps growing over a long run, find the leak", "should_trigger": true },
+
+  { "query": "load test our API at steady and spike to find the capacity ceiling", "should_trigger": false },
+  { "query": "try to break our API's authorization and read other users' data", "should_trigger": false },
+  { "query": "how do I write a simple cargo test for my parser", "should_trigger": false },
+  { "query": "explain the borrow checker to me", "should_trigger": false },
+  { "query": "upgrade our rust edition from 2021 to 2024", "should_trigger": false },
+  { "query": "my cargo build is slow, how do I add incremental compilation", "should_trigger": false },
+  { "query": "add serde derives to these structs", "should_trigger": false },
+  { "query": "what's the best way to handle errors in rust with anyhow", "should_trigger": false },
+  { "query": "write a dockerfile for my rust app", "should_trigger": false },
+  { "query": "review this rust code for readability", "should_trigger": false }
+]

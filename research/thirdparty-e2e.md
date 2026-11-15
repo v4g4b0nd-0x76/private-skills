@@ -1,7 +1,8 @@
 # Research: thirdparty-e2e
 
-- **Date:** 2026-11-14
-- **Change:** created `thirdparty-e2e`
+- **Date:** 2026-11-15
+- **Agent:** Cursor Auto
+- **Change:** edited `thirdparty-e2e` — added grounding rules against inventing provider contracts/metrics
 - **Purpose:** inventory third-party requirements, generate E2E tests, run load/fault scenarios, hunt unexpected behaviour
 
 ## Queries run
@@ -10,6 +11,7 @@
 2. `end to end testing production-like environment load testing k6 locust vegeta 2026 best practices`
 3. `fault injection resilience testing Toxiproxy chaos engineering third party service failure 2026`
 4. `SBOM dependency inventory syft CycloneDX cargo-audit pip-audit npm audit 2026 supply chain`
+5. `reducing LLM hallucination agent skills grounded verification scripts 2026`
 
 ## Sources
 
@@ -30,6 +32,7 @@
 
 ## Decisions
 
+- **Grounding rules:** contracts and metrics must come from inventory/docs/sandbox/k6 output — never from memorized provider shapes. Unknown fields become requirement gaps, not invented schemas.
 - **Inventory first, as a written artifact.** Every E2E test must trace to `.thirdparty/requirements.md`. A test against an unmapped dependency is a guess, and the missing failure-semantics field is itself the first finding.
 - **Testing layer per dependency, chosen by ownership** (source 3's rule). Real container if you run it, sandbox nightly if they offer one, virtualization otherwise — and the record must state why it is virtualized.
 - **Load profiles are named and distinct** (smoke/steady/spike/soak/cold-start/degraded) rather than one ramp-to-crash. Source 2 shows each shape exposes a different bottleneck; `cold-start` and `degraded` are the two that matter most for third-party apps and are usually skipped.

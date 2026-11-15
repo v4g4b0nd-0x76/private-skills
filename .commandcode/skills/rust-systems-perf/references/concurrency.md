@@ -65,7 +65,7 @@ use crossbeam_utils::CachePadded;
 struct Shard { counter: CachePadded<AtomicU64>, /* ... */ }
 ```
 
-See [memory-layout.md](memory-layout.md) for why the pad is 128 bytes on modern targets, not 64.
+See [memory-layout.md](memory-layout.md) for why padding width is 128 on x86-64/aarch64 (prefetch pairs / Apple Silicon), even when the hardware L1 line is 64.
 
 ## Locks, when you must
 

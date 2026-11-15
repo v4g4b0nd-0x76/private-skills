@@ -48,9 +48,10 @@ Approval must be an explicit yes for this plan in this conversation. "Looks fine
 
 ## Gotchas
 
-- A file you forget in `Files to touch` becomes a scope violation in `devflow-implement`. When unsure, list the directory rather than guessing extra files.
+- A file you forget in `Files to touch` becomes a scope violation in `devflow-implement`. When unsure, list the directory rather than guessing extra files — never invent paths that do not exist in the tree.
 - Test commands must already exist or be created by a listed step. A test plan that says "write tests" without a runnable command fails validation.
 - Plan for the smallest change that satisfies the goal; do not bundle refactors into a fix.
+- Do not reintroduce options research already rejected, and do not invent new library/API choices without a research finding to back them.
 - If research has a non-blocking open question, put the decision you are making in `Decision log`.
 
 ## Checklist

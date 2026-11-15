@@ -1,7 +1,8 @@
 # Research: devflow
 
-- **Date:** 2026-11-14
-- **Change:** created `devflow`
+- **Date:** 2026-11-15
+- **Agent:** Cursor Auto
+- **Change:** edited `devflow` + stage skills — anti-hallucination / grounding; research validator requires sourced findings
 - **Purpose:** orchestrator that routes work through research → plan → implement → test → review
 
 ## Queries run
@@ -9,6 +10,8 @@
 1. `multi-agent orchestration handoff planning coding agent workflow best practices 2026`
 2. `agentskills.io specification progressive disclosure best practices`
 3. `agent skill SKILL.md best practices 2026`
+4. `agentskills.io progressive disclosure best practices 2026` (refresh)
+5. `reducing LLM hallucination agent skills grounded verification scripts 2026`
 
 ## Sources
 
@@ -18,6 +21,9 @@
 | 2 | https://agentskills.io/skill-creation/best-practices | vendor docs | plan-validate-execute, checklists, validation loops, "add what the agent lacks" |
 | 3 | https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns | vendor docs | sequential/handoff patterns; explicit context passed between agents |
 | 4 | https://github.com/mgechev/skills-best-practices | source repo | skill composition/router pattern, <500 line body, third-person imperative |
+| 5 | https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices | vendor docs | progressive disclosure; TOC for long refs; one-level-deep links |
+| 6 | https://github.com/srinitude/building-deterministic-skills | source repo | insufficient-context hatch; scripts for exact checks |
+| 7 | https://github.com/pedro-angel/agent-methodology/blob/main/skills/grounded-verifiable-gates/SKILL.md | source repo | cite→verify→pure decision function; fail closed |
 
 ## Project evidence
 
@@ -25,6 +31,7 @@
 
 ## Decisions
 
+- **Anti-hallucination across the chain:** research findings must cite sources (enforced in `check-research.sh`); plan/implement must not invent paths/APIs; test must not invent exit codes; review findings need locations; orchestrator must read status from scripts. Rejected: prose-only "be accurate" without a validator.
 - **Router + five stage skills**, not one giant skill — matches the composition pattern and keeps each body small.
 - **Artifacts as state** in `.devflow/` instead of a JSON state file — each stage is independently readable, no schema migration, and the trail is reviewable in the diff.
 - **Gates at plan approval and before the full test suite** — user selected this in the design conversation; also matches the "plan-validate-execute" pattern.

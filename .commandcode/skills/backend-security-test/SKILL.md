@@ -98,12 +98,19 @@ bash $SKILL_DIR/scripts/check-report.sh <report-file>
 
 It enforces that every finding has reproduction steps and impact, and that unverified items are labelled. Fix and re-run until it exits 0.
 
+## Grounding rules (anti-hallucination)
+
+- Do not invent routes, field names, middleware, or ownership checks. Cite a path from `map-surface.sh` output or a file the agent actually read.
+- A finding needs an **observed effect** (response body, persisted state, second-principal access). Status codes alone are not proof.
+- If the map is incomplete, mark the gap in the report under what was not tested — do not fill it with guessed endpoints.
+- Prefer `check-report.sh` over self-grading; if it fails, fix the report, do not weaken the claim.
+
 ## Gotchas
 
 - **Single-account testing proves nothing about authorization.** Every authz test needs two principals that own different objects.
-- **Test every verb, not just GET.** In a 107-report bug-bounty study, state-changing actions (modify + delete + trigger) were 46.4% of confirmed BOLA; read-only testing misses nearly half.
-- **Vertical (user→admin) failures were 11.9% of confirmed cases** and are absent from most playbooks. Test them explicitly.
-- **UUIDs and opaque IDs do not prevent BOLA.** 39.2% of known-format cases used non-sequential IDs; GraphQL Global IDs are decode→increment→re-encode.
+- **Test every verb, not just GET.** In Kaur 2026 (84 confirmed of 107 classified HackerOne reports), state-changing actions (modify + delete + trigger) were 46.4% of confirmed BOLA; read-only testing misses nearly half.
+- **Vertical (user→admin object) failures were 11.9% of confirmed cases** and are underrepresented in most playbooks. Test them explicitly. Vertical BOLA is object-ownership failure, not RBAC/BFLA endpoint gating.
+- **UUIDs and opaque IDs do not prevent BOLA.** 39.2% of known-format cases used non-sequential IDs; GraphQL Global IDs are often decode→increment→re-encode.
 - **Re-check authorization when object state changes** (archived, deactivated, transferred). Static ownership checks at grant time miss Workflow-Context BOLA.
 - **A 403 on the happy path does not prove the check.** Also test the object's own valid state, alternate routes, HTTP method override, and batch/bulk endpoints that may bypass the per-object check.
 - **Race conditions need synchronized bursts**, not sequential calls. Fire N identical requests in parallel and inspect the final state.

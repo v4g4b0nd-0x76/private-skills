@@ -1,7 +1,8 @@
 # Research: bug-bounty-arena
 
-- **Date:** 2026-11-14
-- **Change:** created `bug-bounty-arena`
+- **Date:** 2026-11-15
+- **Agent:** Cursor Auto
+- **Change:** edited `bug-bounty-arena` — fixed default target ports in SKILL.md; added grounding rules
 - **Purpose:** isolated lab + concurrent hunters, one class each, persistent reports, judged and deduplicated
 
 ## Queries run
@@ -9,6 +10,7 @@
 1. `multi-agent LLM autonomous penetration testing framework 2026 vulnerability discovery deduplication`
 2. `best isolated lab environment pentest vulnerable app docker compose 2026 OWASP juice shop DVWA safe testing`
 3. `vulnerability report deduplication clustering false positive triage LLM 2026`
+4. `OWASP Juice Shop default docker port 3000 DVWA WebGoat DVNA ports 2026` (refresh)
 
 ## Sources
 
@@ -29,6 +31,8 @@
 
 ## Decisions
 
+- **SKILL.md ports must match `lab.sh` / official images**, not alternate host-publish mappings. Verified 2026-11-15: Juice Shop **3000**, DVWA container **80**, WebGoat **8080**, DVNA **9090**. Rejected the previous SKILL table (8086/8088/8090) as hallucinated host mappings that contradicted `lab.sh` and `references/lab-setup.md`.
+- **Grounding rules:** hunters/judge may not invent evidence or ports; resolve from `targets.json`.
 - **`internal: true` over firewall rules.** Source 2 uses firewalld + DROP; a Docker `internal` network removes the route entirely and is verifiable from `docker network inspect`. Cheaper to audit and harder to get wrong. Cost: images must be pulled before going offline, documented.
 - **No published ports, ever.** Publishing binds on the host and is reachable from the LAN; that is the most likely way a lab leaks. Both `--init` and `--status` refuse.
 - **Destructive testing gated by snapshot + explicit arm.** The user asked for backup-then-break semantics. Encoded as `--snapshot` then `--arm-destructive`; `arena.sh --record --destructive` refuses without the arm file, and the judge rejects destructive findings when the arm is missing.

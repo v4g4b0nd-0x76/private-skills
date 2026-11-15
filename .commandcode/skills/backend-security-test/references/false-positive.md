@@ -9,7 +9,7 @@ Security testing fails in both directions, and both are expensive:
 - A **false positive** wastes engineering time, erodes trust in the report, and buries real findings.
 - A **false negative** is the vulnerability that ships.
 
-The empirical BOLA study found that only 42% of reports tagged "IDOR"/"Improper Access Control" on a major platform survived rigorous classification. Tag-level heuristics overstate findings by more than half. Hold your own findings to the same standard.
+The empirical BOLA study (Kaur, arXiv:2605.25865) sampled 200 HackerOne disclosures tagged IDOR/Improper Access Control: 107 were fully classified and **84 of 200 (42%)** were confirmed in-scope BOLA; of the classified set, **78.5%** confirmed and **21.5%** failed strict BOLA criteria. Tag counts alone overstate the signal. Hold your own findings to the same standard.
 
 ## Killing a candidate finding (run this on every one)
 

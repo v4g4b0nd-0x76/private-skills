@@ -202,6 +202,34 @@ rather than 50 noisy ones.
 Practical consequence for this repo: trim before you add. If a skill is not measurably
 better than the bare model on its target task, it is costing context for nothing.
 
+## 9a. Anti-hallucination rules for skill bodies
+
+Skills that tell the agent to "decide" or "recall" without a source of truth produce
+confident wrong answers. Encode these constraints in every skill that produces claims,
+reports, plans, or measurements:
+
+1. **Evidence before claim.** Every factual bullet (finding, metric, API shape, port,
+   severity) must cite something the agent observed in this run: script output, a file
+   path it read, a fetched URL, or a command exit code. If there is no evidence, write
+   an open question / `unverified` / skip — never invent the missing piece.
+2. **Scripts decide pass/fail.** Where a check can be mechanical (`check-*.sh`,
+   `doctor.sh`, `status.sh`, pytest, k6 thresholds), the script's exit code is the
+   verdict. The model proposes; code adjudicates.
+3. **Fail closed on unknowns.** Missing tool, skipped sanitizer, unreachable sandbox,
+   unmapped endpoint → record the gap. Do not treat absence of evidence as a pass.
+4. **No memorized environment facts.** Ports, cache-line sizes, CLI flags, vendor
+   default URLs, and library APIs change. Prefer `doctor`/`status`/`--help`/primary docs
+   over training memory. When a skill embeds a number (study %, default port), name the
+   source and the date it was verified in `research/<skill>.md`.
+5. **Insufficient-context escape hatch.** Instruct the agent explicitly: if required
+   inputs are missing, stop and ask or mark `BLOCKER` — do not fill gaps with plausible
+   fiction. (See also deterministic-skill authoring patterns that offload exact checks
+   to scripts.)
+
+When editing a skill, hunt for lines that force a guess ("typical port", "usually 64",
+"assume Stripe returns…") and replace them with a measurement step or an explicit
+unknown path.
+
 ## 10. Keeping skills accurate over time
 
 Skills rot silently: routes move, tool flags change, a validator stops rejecting what it
@@ -248,9 +276,14 @@ Rules for offensive skills:
 - [Best practices for skill creators](https://agentskills.io/skill-creation/best-practices)
 - [Evaluating skill output quality](https://agentskills.io/skill-creation/evaluating-skills)
 - [Optimizing skill descriptions](https://agentskills.io/skill-creation/optimizing-descriptions)
+- [Claude skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)
 - [SkillsBench: Benchmarking Agent Skills](https://arxiv.org/abs/2602.12670)
 - [mgechev/skills-best-practices](https://github.com/mgechev/skills-best-practices)
 - [mgechev/skillgrade](https://github.com/mgechev/skillgrade)
+- [Building deterministic skills (grounding / insufficient-context)](https://github.com/srinitude/building-deterministic-skills)
+- [Grounded verifiable gates](https://github.com/pedro-angel/agent-methodology/blob/main/skills/grounded-verifiable-gates/SKILL.md)
 - [Multi-agent orchestration patterns](https://learn.microsoft.com/en-us/azure/architecture/ai-ml/guide/ai-agent-design-patterns)
 - [Reducing False Positives in Vulnerability Detection](https://oddsequence.com/research/reducing-false-positives)
 - [Docker pentesting lab isolation](https://blog.bogdancaraman.com/pentesting-lab-docker-vulnerable-web-apps/)
+- [crossbeam CachePadded (pad width ≠ hardware line)](https://docs.rs/crossbeam-utils/latest/crossbeam_utils/struct.CachePadded.html)
+- [BOLA in the wild taxonomy](https://arxiv.org/abs/2605.25865)

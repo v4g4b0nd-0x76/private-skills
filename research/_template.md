@@ -23,7 +23,8 @@
 
 ## Decisions
 
-- <decision> — <why>; rejected: <alternative and why>
+- <decision> — <why, citing source #>; rejected: <alternative and why>
+- Anti-hallucination check: every numeric claim / port / flag in the skill body maps to a source above or to a script that measures it at runtime.
 
 ## Conflicts and resolution
 

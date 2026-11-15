@@ -49,6 +49,7 @@ Produce `.devflow/review.md` with a verdict. This stage is read-only with respec
 
 - Do not edit code in this stage, even trivial fixes. Route back so the change stays traceable.
 - Do not approve with failing or unwaived tests, regardless of how small the change looks.
+- Findings need a file path (and ideally a line/hunk) from the diff or `check-diff.sh` — do not invent locations.
 - Style preferences that the project does not enforce are `note`, not `major`.
 - Re-read the original task; a clean diff can still miss the actual requirement.
 

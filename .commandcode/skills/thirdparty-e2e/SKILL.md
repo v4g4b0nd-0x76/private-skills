@@ -133,6 +133,13 @@ bash $SKILL_DIR/scripts/check-report.sh <report.md>
 
 It requires every finding to have a reproduction, an observed-vs-expected pair, and the load/fault conditions under which it appears. Fix and re-run until it exits 0.
 
+## Grounding rules (anti-hallucination)
+
+- Provider contracts (URLs, fields, rate limits, SLAs) come from `inventory.sh` hits, vendor docs the agent fetched, or sandbox responses — never from model memory of "how Stripe usually works".
+- If a contract field is unknown, record it as an open requirement gap; do not invent schemas to make a test compile.
+- Load/fault results cite the profile name, thresholds, and observed metrics. Do not claim p95/error rates that were not printed by k6 or the suite.
+- Prefer `check-report.sh` over self-grading.
+
 ## Gotchas
 
 - **Mocking your own services produces green CI and red production.** Only virtualize what you cannot run.

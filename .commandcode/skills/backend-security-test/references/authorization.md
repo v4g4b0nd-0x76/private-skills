@@ -17,7 +17,7 @@ Source: empirical taxonomy of 107 classified HackerOne disclosures, 2021–2026 
 | Chained Disclosure | 4.8% | leaked ID from endpoint A used at endpoint B |
 | Object Rebinding | 2.4% | client-supplied ownership field trusted |
 
-Authorization direction: **85.7% horizontal** (peer-to-peer), **11.9% vertical** (user → admin object). State-changing actions total **46.4%**.
+Authorization direction: **85.7% horizontal** (peer-to-peer), **11.9% vertical** (user → admin-owned object; not the same as BFLA/RBAC). State-changing actions (Modify + Delete + Trigger) total **46.4%** of the 84 confirmed cases; unauthorized Read alone is 52.4%.
 
 ## Test shape for each family
 

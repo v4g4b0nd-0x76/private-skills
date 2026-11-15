@@ -39,6 +39,7 @@ If the user gives a new task, start at `devflow-research` unless `.devflow/plan.
 ## Rules
 
 - The artifacts are the state. Do not keep a separate mental plan that contradicts them.
+- Never invent artifact status, approval, or verdict fields — read them from disk via `status.sh` / `next.sh`.
 - Never edit an upstream artifact from a downstream stage. If it is wrong, mark it stale and route back.
 - Never skip a gate because the change looks safe.
 - Missing `.devflow/` is normal for a new task; do not create it manually — the research stage creates it.

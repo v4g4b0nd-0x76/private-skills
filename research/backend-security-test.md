@@ -1,7 +1,8 @@
 # Research: backend-security-test
 
-- **Date:** 2026-11-14
-- **Change:** created `backend-security-test`
+- **Date:** 2026-11-15
+- **Agent:** Cursor Auto
+- **Change:** edited `backend-security-test` — corrected BOLA 42% framing; added grounding rules; re-verified Kaur 2026 stats
 - **Purpose:** adversarial backend security testing — map logic, generate attack suites, optionally probe a local target
 
 ## Queries run
@@ -10,12 +11,14 @@
 2. `business logic vulnerability testing race condition idempotency API 2025 2026 research paper`
 3. `bug bounty report patterns authentication JWT bypass IDOR privilege escalation backend 2025 2026`
 4. `OWASP WSTG testing guide authentication session management authorization test cases checklist`
+5. `BOLA IDOR bug bounty study 107 reports vertical escalation percentage HTTP methods` (2026-11-15 refresh)
+6. `reducing LLM hallucination agent skills grounded verification scripts 2026`
 
 ## Sources
 
 | # | Source | Type | What it established |
 |---|--------|------|---------------------|
-| 1 | https://arxiv.org/html/2605.25865 | peer-reviewed preprint (empirical) | six-family BOLA taxonomy with frequencies: Action-Level 41.7%, Direct Reference 36.9%, Tenant 8.3%, Workflow 6.0%, Chained 4.8%, Rebinding 2.4%; vertical 11.9%; state-changing 46.4%; only 42% of tag-matched reports were truly BOLA |
+| 1 | https://arxiv.org/abs/2605.25865 (HTML + PDF) | peer-reviewed preprint (empirical) | 200 tag-matched → 107 classified → **84 confirmed (42% of 200; 78.5% of classified)**; families Action-Level 41.7%, Direct Ref 36.9%, Tenant 8.3%, Workflow 6.0%, Chained 4.8%, Rebinding 2.4%; vertical 11.9%; Modify+Delete+Trigger = **46.4%**; Read alone 52.4%; non-sequential IDs 39.2% of known-format |
 | 2 | https://api-security.owasp.org/ | standards body | OWASP API Security Top 10 framing; BOLA as API1 |
 | 3 | https://arxiv.org/pdf/2312.14479 | peer-reviewed survey | race conditions are the most prevalent concurrency bug class; CWE-362/367; lockset vs happens-before; false-positive rates of >70% for static detectors |
 | 4 | https://wstg.owasp.org/ | standards body | WSTG test-case structure for authn/session/authz |
@@ -32,6 +35,8 @@ Also inspected the existing `security-review` skill (17 references) to avoid dup
 
 ## Decisions
 
+- **Cite 42% as 84/200 of the tag-matched sample**, not "survived classification" — the classified confirmation rate is 78.5%. Rejected the prior false-positive.md wording that conflated the two denominators.
+- **Add Grounding rules** — map/observed effect before findings; scripts adjudicate reports.
 - **Empirical frequencies drive test priority.** The single most useful thing in the research is the disclosure distribution. It justifies "test all verbs" and "test vertical" with numbers instead of opinion, and it corrects the common single-account, GET-only, horizontal-only test habit.
 - **Two-principal fixtures are mandatory.** A one-account suite cannot prove a boundary. `conftest.py` requires alice + bob and fails loudly when `own()` is unfilled.
 - **Tests fail loudly on unfilled TODOs** (`NotImplementedError`), because a security test that silently passes is worse than none. This is the main false-negative risk in a generated suite.

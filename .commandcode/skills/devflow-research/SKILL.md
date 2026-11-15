@@ -40,7 +40,9 @@ Produce `.devflow/research.md`. Do not write production code in this stage.
 
 ## Output rules
 
-- Findings are one bullet per fact, each with a source: local path, URL, or command output.
+- Findings are one bullet per fact, each with a source after an em dash: local path, URL, or command output (`- fact — https://…` or `- fact — src/foo.ts`).
+- Do not write a finding the agent did not observe in a primary source, a local file, or command output. If evidence is missing, put an open question instead of a guessed fact.
+- Prefer primary sources (official docs, specs, changelogs, source repos) over blog posts. When sources disagree, say so and rank them.
 - Options table must contain at least two real options unless the task is mechanically constrained.
 - Record rejected options with the reason. This prevents the plan stage from relitigating.
 - Open questions that block planning are marked `BLOCKER`; non-blocking ones become risks in the plan.
@@ -49,6 +51,7 @@ Produce `.devflow/research.md`. Do not write production code in this stage.
 
 - Research that only contains web links and no local evidence is incomplete. The plan stage will send it back.
 - Do not paste long documentation into the artifact. Summarize the fact and keep the URL.
+- Do not invent API shapes, versions, CLI flags, or default ports from memory — verify or mark unknown.
 - If the task is a bug, the reproduction attempt and its result belong in Findings.
 - Do not set `status: complete` while a `BLOCKER` question is unresolved.
 

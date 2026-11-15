@@ -45,6 +45,7 @@ Any difference from the plan (different file, different approach, skipped step) 
 
 - Tests that pass locally can still fail in the full suite; do not claim success beyond what you ran.
 - If a step reveals the plan is wrong, stop and route back to `devflow-plan` instead of improvising a new design mid-implementation.
+- Do not invent APIs, config keys, or dependency versions — follow research/plan evidence or stop and ask.
 - Do not commit unless the user asked. Devflow tracks working-tree changes.
 - If `check-scope.sh` reports `.devflow/` files, that is expected and excluded automatically.
 

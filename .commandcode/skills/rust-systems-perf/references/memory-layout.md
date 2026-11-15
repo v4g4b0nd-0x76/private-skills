@@ -83,14 +83,14 @@ Without padding, `hits` and `misses` sit in the same line and every store invali
 When not using `crossbeam`:
 
 ```rust
-#[repr(align(128))] // 128, not 64: x86-64/aarch64 prefetch pairs, Apple Silicon is 128
+#[repr(align(128))] // pad width 128: x86-64 hardware line is usually 64, but adjacent-line prefetch couples pairs; Apple Silicon line is 128
 struct Padded(AtomicU64);
 ```
 
 Rules:
 - Pad **between** independently written values, not after every field — padding costs memory bandwidth on reads.
 - Do not pad values that are always read together.
-- Confirm the real width on the machine (`doctor.sh`); never assume 64.
+- Confirm hardware line size with `doctor.sh`. Prefer `CachePadded` over a hardcoded align: on x86-64/aarch64/powerpc64 it uses N=128 even when the L1 line is 64.
 - `CachePadded<T>` has the same address as its inner `T` since crossbeam-utils 0.8.22, so `&*padded as *const T` is valid.
 
 ## Measuring layout wins

@@ -52,12 +52,14 @@ Never run this skill against production. If the user wants to test their own app
 
 Default target set (see [references/lab-setup.md](references/lab-setup.md)):
 
-| Target | Port | Good for |
+| Target | Container port | Good for |
 |---|---|---|
 | OWASP Juice Shop | 3000 | authz, business logic, injection, XSS |
-| DVWA | 8086 | classic injection, file inclusion |
-| WebGoat | 8088 | authn/authz, deserialization |
-| DVNA | 8090 | Node-specific logic flaws |
+| DVWA | 80 | classic injection, file inclusion |
+| WebGoat | 8080 | authn/authz, deserialization |
+| DVNA | 9090 | Node-specific logic flaws |
+
+Use the ports from `.arena/<lab>/targets.json` (written by `lab.sh --init`), not memorized host-publish ports. Inside the arena network the URLs are `http://juice-shop:3000`, `http://dvwa:80`, `http://webgoat:8080`, `http://dvna:9090`.
 
 Bring it up:
 
@@ -142,6 +144,13 @@ It fails if any confirmed finding lacks reproduction, if a destructive finding l
 | Best for | wide surface, parallel classes | one suspected class, deep |
 
 SkillsBench found **2–3 skills per task optimal, diminishing after 4** — the same applies here. 3–6 hunters is the useful range; 20 hunters mostly produces duplicates for the judge to discard.
+
+## Grounding rules (anti-hallucination)
+
+- Hunters record only what they **observed** (body, state change, access gained). Do not invent endpoints, payloads, or severity from memory of Juice Shop/DVWA challenges.
+- Resolve target URLs from `targets.json` / `--status` output. Do not invent host ports.
+- The judge rejects findings without reproduction or observed effect; do not "help" a finding by inventing missing evidence.
+- If depth budget is exhausted without proof, mark `unverified` and stop — do not escalate confidence.
 
 ## Gotchas
 

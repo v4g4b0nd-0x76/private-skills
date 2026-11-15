@@ -39,7 +39,8 @@ Produce `.devflow/test-report.md`. Do not change production code in this stage; 
 
 ## Gotchas
 
-- Never report "tests pass" for a suite you did not run. Record the exact command and the exit code.
+- Never report "tests pass" for a suite you did not run. Record the exact command and the exit code as printed — do not invent results.
+- A skipped or unavailable tool is a waiver candidate, not an implicit pass.
 - A passing test suite does not prove the goal is met; check the plan's success condition separately and note it.
 - Watch for suites that hang on watch mode; add `--run`/`--watch=false` style flags.
 - Flaky failures get one re-run; if it passes twice inconsistently, record it as flaky in Waivers instead of hiding it.

@@ -1,7 +1,9 @@
 # Research: devflow-review
 
-- **Date:** 2026-11-14
-- **Change:** created `devflow-review`
+- **Date:** 2026-11-15
+- **Agent:** Cursor Auto
+- **Change:** edited grounding gotchas (shared anti-hallucination pass with parent devflow)
+- **Prior:** created 2026-11-14
 
 ## Queries run
 

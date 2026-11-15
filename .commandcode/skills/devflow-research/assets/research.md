@@ -18,8 +18,8 @@ updated: YYYY-MM-DD
 
 ## Findings
 
-- <fact> — <source: path, URL, or command>
-- <fact> — <source>
+- <fact observed in this run> — <source: path, URL, or command output>
+- <fact observed in this run> — <source>
 
 ## Options considered
 

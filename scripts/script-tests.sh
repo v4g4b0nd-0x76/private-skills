@@ -130,6 +130,45 @@ MD
 expect_exit 0 "check-research accepts a sourced artifact" bash "$RES" "$T"
 sed -i.bak 's/^status: complete/status: draft/' "$T/.devflow/research.md"
 expect_exit 1 "check-research rejects status draft" bash "$RES" "$T"
+# Restore complete status, then strip citations from Findings
+sed -i.bak 's/^status: draft/status: complete/' "$T/.devflow/research.md"
+sed -i.bak 's/^- a — .*/- a invented without a source/' "$T/.devflow/research.md"
+expect_exit 1 "check-research rejects unsourced findings" bash "$RES" "$T"
+# Restore a valid artifact for later tests that may reuse $T
+cat > "$T/.devflow/research.md" <<'MD'
+---
+devflow: research
+status: complete
+upstream: none
+approval: not-required
+updated: 2026-11-14
+---
+
+# Research: x
+
+## Task
+
+Do x.
+
+## Findings
+
+- a — https://example.com/a
+- b — src/app.ts
+
+## Decisions
+
+- small
+
+## Open questions
+
+- none
+
+## Sources
+
+1. A — https://example.com/a
+2. B — https://example.com/b
+3. local — src/app.ts
+MD
 
 cat > "$T/.devflow/plan.md" <<'MD'
 ---

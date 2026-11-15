@@ -46,6 +46,10 @@ done
 findings="$(section Findings | grep -c '^-[[:space:]]' || true)"
 [ "$findings" -ge 2 ] || fail "Findings needs at least 2 bullets (found $findings)"
 
+# Every finding must cite evidence (em dash + path/URL/command, or an inline URL).
+unsourced="$(section Findings | grep -E '^-[[:space:]]' | grep -cvE '(—|–|http://|https://|/)' || true)"
+[ "$unsourced" -eq 0 ] || fail "every Findings bullet needs a source (use ' — path|URL|command')"
+
 sources="$(section Sources | grep -cE '^([0-9]+\.|-)[[:space:]]' || true)"
 [ "$sources" -ge 3 ] || fail "Sources needs at least 3 entries (found $sources)"
 

@@ -20,8 +20,8 @@ bash $SKILL_DIR/scripts/doctor.sh <project-root>
 
 It prints the target triple, the machine's real cache line size, which profilers and sanitizers exist, and review candidates in the source. Read its output before choosing any workflow; on a platform without `perf`/`valgrind` most of the classic advice does not apply.
 
-- Cache line size is **not** always 64 bytes. It is 128 on x86-64 and aarch64 (the prefetcher pulls pairs), 128 on Apple Silicon, 32 on some arm/mips, 256 on s390x. Never hardcode 64.
-- Newer Intel parts and AMD parts also use spatial prefetching, so two hot atomics 64 bytes apart can still share a line.
+- Hardware L1 line size is usually **64 bytes on x86-64**, **128 on Apple Silicon**, 32 on some arm/mips, 256 on s390x. Read the value `doctor.sh` printed — do not invent it.
+- For false-sharing padding, still use **128** (or `CachePadded`) on x86-64/aarch64/powerpc64: Intel/AMD adjacent-line prefetch can couple two 64-byte lines, so 64-byte separation is not enough. That is a padding width, not a claim that the hardware line is 128.
 
 ## Step 1 — Measure before changing anything
 
@@ -89,9 +89,16 @@ bash $SKILL_DIR/scripts/bugs.sh <project-root> [--all | miri | loom | asan | tsa
 - `bugs.sh` runs what the host supports and skips the rest with a printed reason. A skipped check is not a pass; record it.
 - Run the CPU-feature check whenever `target-cpu` or `#[target_feature]` is involved: code that works with `-C target-cpu=native` and breaks on a baseline target is a shipping bug.
 
+## Grounding rules (anti-hallucination)
+
+- Optimize only against a recorded baseline. Do not claim a win without before/after numbers from `criterion`, `perf`, `samply`, or `dhat`.
+- Platform facts (`perf`/`valgrind` availability, cache line size, sanitizer support) come from `doctor.sh` output, not assumptions.
+- A skipped `bugs.sh` check is not a pass — record the skip reason. Do not invent Miri/Loom results that were not run.
+- Prefer `CachePadded` over hand-rolled constants when unsure of the pad width.
+
 ## Gotchas
 
-- **64-byte padding is wrong on most modern targets.** Use 128 or `CachePadded`. Verified on Apple Silicon: `sysctl -n hw.cachelinesize` returns 128.
+- **64-byte padding is wrong for contended atomics on x86-64/aarch64.** Prefer `CachePadded` (N=128 there) or `#[repr(align(128))]`. On Apple Silicon the hardware line is also 128 (`sysctl -n hw.cachelinesize`).
 - **`-C target-cpu=native` is a portability trap.** Build and test artifacts with it if you like, never ship binaries with it. Prefer runtime detection (`is_x86_feature_detected!`, `is_aarch64_feature_detected!`).
 - **`valgrind` does not run on Apple Silicon macOS.** Use `dhat-rs` there; it works on all platforms and needs a source hook.
 - **`dhat` heap-usage tests must not run in parallel.** Put each in its own integration test file, or use `--test-threads=1`.

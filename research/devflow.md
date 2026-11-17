@@ -60,3 +60,10 @@
 Bugs found and fixed during verification:
 - Routing gave the plan gate lower precedence than a `draft` plan, so approval was skipped. Precedence corrected.
 - Backward path left `verdict: approve` in place after marking stale, causing a routing loop. Verdicts now cleared.
+
+
+## Follow-up: optional latency bench-env hop (2026-11-17)
+
+- Added optional `.devflow/bench-env.md` and plan headers `bench_env` / `latency_campaign`.
+- `next.sh` routes to `rust-submicrosecond-refactor` when env required before the test gate.
+- Sources: WireMock load-test simulation guidance + existing thirdparty-e2e layering rule in-repo.

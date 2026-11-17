@@ -27,13 +27,23 @@ fi
 
 printf '%-12s %-10s %-14s %s\n' STAGE STATUS APPROVAL ARTIFACT
 for pair in "research:research.md" "plan:plan.md" "implement:implement.md" \
-            "test:test-report.md" "review:review.md"; do
+            "bench-env:bench-env.md" "test:test-report.md" "review:review.md"; do
   stage="${pair%%:*}"
   file="$dir/${pair#*:}"
   if [ -f "$file" ]; then
     printf '%-12s %-10s %-14s %s\n' \
       "$stage" "$(field status "$file")" "$(field approval "$file")" "$file"
   else
+    # Optional artifact: only show missing when the plan requires it.
+    if [ "$stage" = "bench-env" ]; then
+      plan="$dir/plan.md"
+      need="not-required"
+      [ -f "$plan" ] && need="$(field bench_env "$plan")"
+      [ -n "$need" ] || need="not-required"
+      if [ "$need" != "required" ]; then
+        continue
+      fi
+    fi
     printf '%-12s %-10s %-14s %s\n' "$stage" "-" "-" "$file (missing)"
   fi
 done

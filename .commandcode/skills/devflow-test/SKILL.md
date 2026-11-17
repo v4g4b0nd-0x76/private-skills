@@ -14,8 +14,9 @@ Produce `.devflow/test-report.md`. Do not change production code in this stage; 
 
 ## Preconditions
 
-1. Run `bash $SKILL_DIR/../devflow/scripts/next.sh <project-root>`. It must say `GATE: test run approval required` or `NEXT: devflow-test`.
+1. Run `bash $SKILL_DIR/../devflow/scripts/next.sh <project-root>`. It must say `GATE: test run approval required` or `NEXT: devflow-test`. If it says `NEXT: rust-submicrosecond-refactor`, stop and activate that skill first (bench-env / latency campaign).
 2. Read `.devflow/plan.md` (the `Test plan` section is the primary source of truth) and `.devflow/implement.md`.
+3. If `plan.bench_env: required`, require `.devflow/bench-env.md` with `status: complete` and a passing `check-bench-env.sh` from rust-submicrosecond-refactor before any load or dual-gate command.
 
 ## Steps
 
@@ -23,7 +24,7 @@ Produce `.devflow/test-report.md`. Do not change production code in this stage; 
    ```bash
    bash $SKILL_DIR/scripts/run-gates.sh <project-root>
    ```
-   The script prints the commands it would run. Merge them with the plan's `Test plan`; the plan wins when the two disagree.
+   The script prints the commands it would run. Merge them with the plan's `Test plan`; the plan wins when the two disagree. When `latency_campaign: true`, also include dual-gate evidence under `.bench-history/` (`gate.py` ACCEPT rows and `progress.py` ledger) — do not invent percentiles.
 2. **Targeted checks first** — run the fastest relevant check on the changed files (single test file, typecheck, lint). A quick failure saves a long run.
 3. **STOP at the gate.** Show the user the exact full-suite commands and ask for approval to run them. Do not run the full suite before approval.
 4. **On approval**, run the full suite:
@@ -55,4 +56,4 @@ Produce `.devflow/test-report.md`. Do not change production code in this stage; 
 
 ## Dependencies
 
-Uses `assets/test-report.md` and `scripts/run-gates.sh` from this directory, plus routing from `../devflow/`.
+Uses `assets/test-report.md` and `scripts/run-gates.sh` from this directory, plus routing from `../devflow/`. When `bench_env: required`, also depend on `../rust-submicrosecond-refactor/scripts/check-bench-env.sh` and optionally `../thirdparty-e2e/` inventory evidence.

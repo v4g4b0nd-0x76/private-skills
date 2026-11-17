@@ -1,0 +1,8 @@
+[
+  {
+    "name": "provider_via_proxy",
+    "listen": "0.0.0.0:26380",
+    "upstream": "wiremock:8080",
+    "enabled": true
+  }
+]

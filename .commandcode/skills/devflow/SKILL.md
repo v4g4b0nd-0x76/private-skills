@@ -8,7 +8,7 @@ metadata:
 
 # Devflow Orchestrator
 
-Routes work through five stage skills. Each stage writes one artifact to `.devflow/` in the target project; the next stage MUST read that artifact before acting.
+Routes work through five stage skills plus an optional latency bench-env branch. Each stage writes one artifact to `.devflow/` in the target project; the next stage MUST read that artifact before acting.
 
 `$SKILL_DIR` in the commands below means the absolute path of this skill's own directory.
 
@@ -19,10 +19,13 @@ Routes work through five stage skills. Each stage writes one artifact to `.devfl
 | 1 | devflow-research | `.devflow/research.md` | none |
 | 2 | devflow-plan | `.devflow/plan.md` | STOP for user approval |
 | 3 | devflow-implement | `.devflow/implement.md` | none |
+| 3b | rust-submicrosecond-refactor *(optional)* | `.devflow/bench-env.md` (+ `.bench-history/` when `latency_campaign: true`) | none — only when `plan.bench_env: required` |
 | 4 | devflow-test | `.devflow/test-report.md` | STOP before full suite |
 | 5 | devflow-review | `.devflow/review.md` | none |
 
 The artifact header, status lifecycle, and stale rules are defined in [the handoff contract](references/handoff-contract.md). Read it before routing for the first time in a session.
+
+**Latency / third-party benches:** when the plan sets `bench_env: required`, `next.sh` routes to `rust-submicrosecond-refactor` after implement so it can stand up a production-grade fixture stack (owned services real, third parties simulated with recorded/prod-like latency) before any dual-gate measurement. Do not invent that environment — follow the skill's Bench environment phase.
 
 ## Routing
 
@@ -30,6 +33,7 @@ The artifact header, status lifecycle, and stale rules are defined in [the hando
 2. Run `bash $SKILL_DIR/scripts/next.sh <project-root>` to get the next action.
 3. Act on the output exactly:
    - `NEXT: devflow-<stage>` — activate that stage skill and follow it.
+   - `NEXT: rust-submicrosecond-refactor` — activate that skill; start at **Bench environment**, then the latency campaign if `plan.latency_campaign: true`.
    - `GATE: ...` — stop, present the artifact to the user, and ask for approval. Do not continue.
    - `DONE` — report the review verdict and stop.
 4. Never activate two stage skills at once. One stage per turn, then re-run `next.sh`.
@@ -54,4 +58,4 @@ If the user gives a new task, start at `devflow-research` unless `.devflow/plan.
 
 ## Dependencies
 
-Stage skills live as siblings: `../devflow-research/`, `../devflow-plan/`, `../devflow-implement/`, `../devflow-test/`, `../devflow-review/`. Install them together.
+Stage skills live as siblings: `../devflow-research/`, `../devflow-plan/`, `../devflow-implement/`, `../devflow-test/`, `../devflow-review/`. Optional latency branch: `../rust-submicrosecond-refactor/` (bench-env + dual-gate) composing `../thirdparty-e2e/` for inventory/mocks. Install the devflow package together; install the latency pair when planning `bench_env: required`.

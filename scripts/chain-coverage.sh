@@ -86,12 +86,16 @@ MD
 }
 
 write_plan() {
+local bench_env="${3:-not-required}"
+local latency="${4:-false}"
 cat > .devflow/plan.md <<MD
 ---
 devflow: plan
 status: $1
 upstream: .devflow/research.md
 approval: $2
+bench_env: $bench_env
+latency_campaign: $latency
 updated: 2026-11-14
 ---
 
@@ -117,9 +121,71 @@ x works.
 
 - \`npm test\` — suite passes
 
+## Bench environment
+
+$(if [ "$bench_env" = "required" ]; then cat <<'BENCH'
+- Owned deps (run for real): postgres:16-alpine on localhost
+- Third-party deps (simulate): payments via WireMock + Toxiproxy
+- Fixture / mock data sources: recorded sandbox capture under .bench-env/fixtures/
+- Isolation: dedicated compose project, localhost-only ports
+- Evidence of readiness: check-bench-env.sh exit 0
+BENCH
+else echo "- not applicable"; fi)
+
 ## Risks and rollback
 
 - revert src/app.ts
+MD
+}
+
+write_bench_env() {
+cat > .devflow/bench-env.md <<MD
+---
+devflow: bench-env
+status: $1
+upstream: .devflow/plan.md
+approval: not-required
+updated: 2026-11-14
+---
+
+# Bench environment: x
+
+## Summary
+
+- Profile active: baseline-zero
+- Compose project: bench
+- Evidence: check-bench-env.sh
+
+## Owned dependencies (real)
+
+| Service | Image/tag | Port | Health URL | Notes |
+| --- | --- | --- | --- | --- |
+| postgres | postgres:16-alpine | 54329 | pg_isready | |
+
+## Third-party simulations
+
+| Provider | Layer | Listen via | Prod-like latency source | Fixture path |
+| --- | --- | --- | --- | --- |
+| payments | WireMock | Toxiproxy | SLA p50=12ms | .bench-env/fixtures/charge.json |
+
+## Mock / fixture data
+
+- Sources: recorded sandbox
+- Paths: .bench-env/fixtures/
+- Uniqueness / cleanup: per-run ids
+
+## Latency profiles
+
+| Profile | What it sets | When to use |
+| --- | --- | --- |
+| baseline-zero | no delay | dual-gate |
+| prod-like | SLA delays | budget share |
+
+## Readiness
+
+- [x] Owned services healthy
+- [x] Third-party stubs loaded
+- [x] check-bench-env.sh exits 0
 MD
 }
 
@@ -265,6 +331,14 @@ expect_exit 0 "check-plan accepts valid" bash "$check_plan" "$P"
 sed -i.bak 's/^## Non-goals/## Other/' .devflow/plan.md 2>/dev/null || sed -i '' 's/^## Non-goals/## Other/' .devflow/plan.md
 expect_exit 1 "check-plan rejects missing Non-goals" bash "$check_plan" "$P"
 write_plan draft pending
+
+echo ""
+echo "-- plan: bench_env / latency_campaign --"
+write_plan draft pending required false
+expect_exit 0 "check-plan accepts bench_env required" bash "$check_plan" "$P"
+write_plan draft pending not-required true
+expect_exit 1 "check-plan rejects latency without bench_env" bash "$check_plan" "$P"
+write_plan draft pending not-required false
 
 echo ""
 echo "-- scope enforcement --"

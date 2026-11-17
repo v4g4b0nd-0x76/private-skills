@@ -124,10 +124,13 @@ Key facts that shape the defaults:
 
 ```
 devflow-research → devflow-plan → [GATE: user approval] → devflow-implement
+                 → [optional] rust-submicrosecond-refactor   # when plan.bench_env: required
                  → devflow-test → [GATE: user approval] → full suite → devflow-review
 ```
 
 Contract: `.commandcode/skills/devflow/references/handoff-contract.md`. Every stage reads its upstream artifact before acting and writes exactly one artifact. Changing the artifact header schema means updating the contract, all stage skills, and the devflow scripts in one change.
+
+Optional latency branch: when `plan.md` sets `bench_env: required` (and usually `latency_campaign: true`), `next.sh` routes to `rust-submicrosecond-refactor` to stand up `.bench-env/` + `.devflow/bench-env.md` (owned deps real, third parties simulated via patterns from `thirdparty-e2e`) before dual-gate measurement. Do not skip that hop.
 
 Approval gates are required. Do not remove a gate without the user asking for it explicitly.
 

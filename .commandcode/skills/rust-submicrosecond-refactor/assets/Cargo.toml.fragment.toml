@@ -1,0 +1,19 @@
+# Merge into the project's Cargo.toml for deterministic release codegen.
+# Prefer fat LTO + CGU=1 for final latency binaries; thin LTO while iterating.
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "none"
+debug = 1
+
+[profile.profiling]
+inherits = "release"
+debug = 2
+strip = false
+
+[profile.bench]
+inherits = "release"
+debug = 1

@@ -71,6 +71,37 @@ fi
 tests="$(section "Test plan" | grep -c '^-' || true)"
 [ "$tests" -ge 1 ] || fail "Test plan needs at least one runnable command"
 
+bench_env="$(field bench_env)"
+[ -n "$bench_env" ] || bench_env="not-required"
+case "$bench_env" in
+  not-required|required) ;;
+  *) fail "bench_env must be 'not-required' or 'required' (found '$bench_env')" ;;
+esac
+
+latency="$(field latency_campaign)"
+[ -n "$latency" ] || latency="false"
+case "$latency" in
+  true|false) ;;
+  *) fail "latency_campaign must be 'true' or 'false' (found '$latency')" ;;
+esac
+
+if [ "$bench_env" = "required" ]; then
+  if [ -z "$(section "Bench environment" | tr -d '[:space:]')" ]; then
+    fail "bench_env: required needs a non-empty ## Bench environment section"
+  fi
+  bench_body="$(section "Bench environment")"
+  echo "$bench_body" | grep -qiE 'owned|real|container|postgres|redis|kafka' \
+    || fail "Bench environment must name owned deps to run for real (or explicitly none)"
+  echo "$bench_body" | grep -qiE 'third-party|wiremock|simulat|mock|toxiproxy|sandbox' \
+    || fail "Bench environment must name third-party simulation approach"
+  echo "$bench_body" | grep -qiE 'fixture|recorded|synthetic|mock data|payload' \
+    || fail "Bench environment must name fixture / mock data sources"
+fi
+
+if [ "$latency" = "true" ] && [ "$bench_env" != "required" ]; then
+  fail "latency_campaign: true requires bench_env: required (production-grade fixtures before dual-gate)"
+fi
+
 if [ "$errors" -gt 0 ]; then
   echo "plan check failed: $errors error(s)" >&2
   exit 1

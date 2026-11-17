@@ -59,6 +59,7 @@ fi
 research="$dir/research.md"
 plan="$dir/plan.md"
 implement="$dir/implement.md"
+benchenv="$dir/bench-env.md"
 test="$dir/test-report.md"
 review="$dir/review.md"
 
@@ -77,6 +78,24 @@ fi
 
 if ! done_state "$(value "$implement" status)"; then
   report devflow-implement "implement.md is $(describe "$implement")"
+fi
+
+# Optional latency / third-party bench environment (declared on the plan).
+bench_env="$(value "$plan" bench_env)"
+[ -n "$bench_env" ] || bench_env="not-required"
+latency_campaign="$(value "$plan" latency_campaign)"
+[ -n "$latency_campaign" ] || latency_campaign="false"
+
+if [ "$bench_env" = "required" ] && ! done_state "$(value "$benchenv" status)"; then
+  report rust-submicrosecond-refactor \
+    "plan.bench_env=required; bench-env.md is $(describe "$benchenv") — set up production-grade fixtures/mocks first"
+fi
+
+if [ "$latency_campaign" = "true" ] && [ "$bench_env" = "required" ] \
+  && done_state "$(value "$benchenv" status)" \
+  && [ ! -d "$root/.bench-history" ]; then
+  report rust-submicrosecond-refactor \
+    "plan.latency_campaign=true; .bench-history missing — run dual-gate campaign after bench-env"
 fi
 
 if [ "$(value "$test" verdict)" = "fail" ]; then

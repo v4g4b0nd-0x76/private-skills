@@ -31,6 +31,7 @@ Produce `.devflow/plan.md` and stop at the approval gate. Do not write productio
    - `Steps` ordered, each a single reviewable change.
    - `Files to touch` exact repository-relative paths, one per line. This list is enforced later by `check-scope.sh`, so include every file you expect to modify.
    - `Test plan` the exact commands that prove the change works, plus the edge cases they cover.
+   - Header `bench_env` / `latency_campaign` — set `bench_env: required` and fill `## Bench environment` when the work needs mock data, third-party access, or a sub-µs dual-gate campaign. Owned deps run for real; third parties are simulated with production-like latency (see rust-submicrosecond-refactor + thirdparty-e2e). Otherwise leave `not-required` / `false` and write `not applicable` in the section.
    - `Risks and rollback` one line per risk.
    - `Decision log` new decisions not already in research.
 3. **Validate**:

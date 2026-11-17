@@ -104,6 +104,8 @@ for a_file in "$overlap_dir"/*.desc; do
       # Documented split: authorized abuse vs correctness under load. Each
       # names the other in its negative trigger, so the overlap is deliberate.
       backend-security-test:thirdparty-e2e) continue ;;
+      # Documented split: sub-µs dual-gate campaign vs general systems perf.
+      rust-submicrosecond-refactor:rust-systems-perf) continue ;;
     esac
     common=""
     for word in security testing performance backlog heap cache load e2e migration; do

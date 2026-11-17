@@ -1,0 +1,82 @@
+[
+  {
+    "query": "refactor our matching engine hot path down into the 100ns range with a proper baseline and statistical gate",
+    "should_trigger": true
+  },
+  {
+    "query": "run a sub-microsecond Rust optimization campaign module by module and persist .bench-history",
+    "should_trigger": true
+  },
+  {
+    "query": "our HFT order book update is ~2\u00b5s p99 \u2014 eliminate copies and false sharing one hypothesis at a time",
+    "should_trigger": true
+  },
+  {
+    "query": "set up open-loop TSC latency benches and Mann-Whitney accept/reject for this lock-free ring",
+    "should_trigger": true
+  },
+  {
+    "query": "wire parser still does memcpy according to LLVM IR \u2014 zero-copy refactor with before/after hardware counters",
+    "should_trigger": true
+  },
+  {
+    "query": "pin io_uring thread-per-core and cut tail jitter below 300ns budget share",
+    "should_trigger": true
+  },
+  {
+    "query": "AoS to SoA on the book levels then dual-gate the p50/p99 improvement",
+    "should_trigger": true
+  },
+  {
+    "query": "replace RwLock top-of-book with a SeqLock and prove it with interleaved A/B samples",
+    "should_trigger": true
+  },
+  {
+    "query": "SIMD branchless search on sorted price levels targeting tens of nanoseconds",
+    "should_trigger": true
+  },
+  {
+    "query": "devflow says next is rust-submicrosecond-refactor because bench_env is required \u2014 set up WireMock fixtures",
+    "should_trigger": true
+  },
+  {
+    "query": "profile heap allocations and fix false sharing in our ordinary Rust service",
+    "should_trigger": false
+  },
+  {
+    "query": "add miri and loom coverage gates to the crate",
+    "should_trigger": false
+  },
+  {
+    "query": "explain the borrow checker and how ownership works",
+    "should_trigger": false
+  },
+  {
+    "query": "write a simple REST handler with axum and serde",
+    "should_trigger": false
+  },
+  {
+    "query": "upgrade our Rust edition and fix clippy warnings",
+    "should_trigger": false
+  },
+  {
+    "query": "load test the HTTP API with k6 at steady and spike",
+    "should_trigger": false
+  },
+  {
+    "query": "review this PR for readability and naming",
+    "should_trigger": false
+  },
+  {
+    "query": "add anyhow error handling to the CLI",
+    "should_trigger": false
+  },
+  {
+    "query": "dockerize the Rust binary for deployment",
+    "should_trigger": false
+  },
+  {
+    "query": "our microservice is slow under load \u2014 maybe need more caching at the HTTP layer",
+    "should_trigger": false
+  }
+]

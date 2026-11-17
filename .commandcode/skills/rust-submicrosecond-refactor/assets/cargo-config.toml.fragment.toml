@@ -1,0 +1,11 @@
+# Merge into .cargo/config.toml
+# Use [target.'cfg(all())'] so cargo-codspeed / multi-target builds still see flags.
+
+[target.'cfg(all())']
+rustflags = [
+    "-C", "target-cpu=native",
+    "-C", "force-frame-pointers=yes",
+]
+
+# Fleet binaries: replace native with "x86-64-v3" (AVX2+BMI2) or "x86-64-v4" (AVX-512).
+# Never ship -C target-cpu=native to heterogeneous hosts.

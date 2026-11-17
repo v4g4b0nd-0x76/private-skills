@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Mark devflow artifacts stale after an upstream change.
-# Usage: mark-stale.sh <project-root> <research|plan|implement|test|review>...
+# Usage: mark-stale.sh <project-root> <research|plan|implement|bench-env|test|review>...
 set -euo pipefail
 
 root="${1:-.}"
 shift || true
 
 if [ "$#" -eq 0 ]; then
-  echo "usage: mark-stale.sh <project-root> <research|plan|implement|test|review>..." >&2
+  echo "usage: mark-stale.sh <project-root> <research|plan|implement|bench-env|test|review>..." >&2
   exit 1
 fi
 
@@ -16,6 +16,7 @@ file_for() {
     research) echo "research.md" ;;
     plan) echo "plan.md" ;;
     implement) echo "implement.md" ;;
+    bench-env|benchenv) echo "bench-env.md" ;;
     test) echo "test-report.md" ;;
     review) echo "review.md" ;;
     *) echo "" ;;
@@ -25,7 +26,7 @@ file_for() {
 for stage in "$@"; do
   name="$(file_for "$stage")"
   if [ -z "$name" ]; then
-    echo "error: unknown stage '$stage' (research|plan|implement|test|review)" >&2
+    echo "error: unknown stage '$stage' (research|plan|implement|bench-env|test|review)" >&2
     exit 1
   fi
 

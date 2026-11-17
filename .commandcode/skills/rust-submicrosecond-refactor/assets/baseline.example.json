@@ -1,0 +1,45 @@
+{
+  "module": "crates/example-book",
+  "stage": "baseline_v0",
+  "timestamp_utc": "2026-11-17T07:30:00Z",
+  "git_commit": "REPLACE_WITH_SHA",
+  "environment": {
+    "cpu_model": "from doctor.sh",
+    "governor": "performance",
+    "turbo_boost": "off",
+    "smt": "off",
+    "kernel_isolation": "isolcpus=… nohz_full=… rcu_nocbs=…",
+    "rustc_version": "1.x.y",
+    "rustflags": "-C target-cpu=native -C force-frame-pointers=yes"
+  },
+  "workload": {
+    "mode": "open_loop",
+    "target_rate_ops_sec": 1000000,
+    "warmup_ops": 100000,
+    "measured_ops": 10000000
+  },
+  "latency_ns": {
+    "p50": 420.0,
+    "p99": 1850.0,
+    "p99_9": 6400.0,
+    "p99_99": 19200.0,
+    "conditional_tail_excess_p99_ns": 1120.0
+  },
+  "throughput_ops_sec": 2150000.0,
+  "hardware_counters": {
+    "ipc": 1.12,
+    "llc_mpki": 4.85,
+    "branch_miss_pct": 2.4,
+    "l1i_miss_mpki": 1.3,
+    "c2c_hitm_events": 142,
+    "context_switches": 0,
+    "cpu_migrations": 0
+  },
+  "memory_profile": {
+    "hot_struct_bytes": 64,
+    "allocs_per_op": 2,
+    "bytes_allocated_per_op": 128,
+    "llvm_memcpy_calls_gt_64b": 3
+  },
+  "system_budget_p99_ns": 300.0
+}

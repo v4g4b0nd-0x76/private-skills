@@ -20,7 +20,7 @@ Execute the approved plan. The plan is the contract; the diff is the output.
 4. Confirm `approval: granted` in `plan.md`. Do not start without it.
 5. Mark downstream artifacts stale:
    ```bash
-   bash $SKILL_DIR/../devflow/scripts/mark-stale.sh <project-root> test review
+   bash $SKILL_DIR/../devflow/scripts/mark-stale.sh <project-root> bench-env test review
    ```
 
 ## Steps

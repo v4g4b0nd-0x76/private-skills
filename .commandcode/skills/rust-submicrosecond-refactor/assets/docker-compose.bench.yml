@@ -1,0 +1,48 @@
+# Production-grade local bench stack. Copied to .bench-env/docker-compose.yml by setup-bench-env.sh.
+# Pin tags. Bind admin ports to 127.0.0.1. Add owned services (postgres/redis/…) below — do not mock them.
+#
+#   docker compose -p bench -f .bench-env/docker-compose.yml up -d --wait
+#   docker compose -p bench -f .bench-env/docker-compose.yml down -v
+
+services:
+  wiremock:
+    image: wiremock/wiremock:3.9.1
+    container_name: bench-wiremock
+    ports:
+      - "127.0.0.1:8089:8080"
+    volumes:
+      - ./wiremock:/home/wiremock
+    command: ["--global-response-templating", "--verbose"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/__admin/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    container_name: bench-toxiproxy
+    ports:
+      - "127.0.0.1:8475:8474"
+      - "127.0.0.1:26380:26380"
+    command: ["-host", "0.0.0.0", "-config", "/config/toxiproxy.json"]
+    volumes:
+      - ./toxiproxy.json:/config/toxiproxy.json:ro
+    depends_on:
+      wiremock:
+        condition: service_healthy
+
+  # Example owned dependency — uncomment and pin to the project's real major.
+  # postgres:
+  #   image: postgres:16-alpine
+  #   environment:
+  #     POSTGRES_PASSWORD: bench
+  #     POSTGRES_USER: bench
+  #     POSTGRES_DB: bench
+  #   ports:
+  #     - "127.0.0.1:54329:5432"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U bench"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 12

@@ -439,6 +439,110 @@ bash "$ARENA/report.sh" demo >/dev/null 2>&1
 
 cd "$repo_root" || exit 1
 
+# ---------------------------------------------------------------------------
+section "rust-submicrosecond-refactor: baseline / gate / progress"
+SUB="$skills/rust-submicrosecond-refactor/scripts"
+SUB_FIX="$work/subus"
+mkdir -p "$SUB_FIX/samples" "$SUB_FIX/history"
+
+# persist_baseline: reject incomplete, accept complete
+expect_exit 1 "persist validate rejects empty object" \
+  bash -c "echo '{}' > \"$SUB_FIX/bad.json\" && python3 \"$SUB/persist_baseline.py\" validate \"$SUB_FIX/bad.json\""
+
+python3 "$SUB/persist_baseline.py" write \
+  --out "$SUB_FIX/history/mod_baseline.json" \
+  --module crates/mod --stage baseline_v0 \
+  --p50 100 --p99 400 --p99-9 800 --throughput 1e6 \
+  --force >/dev/null
+expect_exit 0 "persist validate accepts written baseline" \
+  python3 "$SUB/persist_baseline.py" validate "$SUB_FIX/history/mod_baseline.json"
+
+python3 "$SUB/persist_baseline.py" write \
+  --out "$SUB_FIX/history/mod_step_1.json" \
+  --module crates/mod --stage step_1 \
+  --p50 40 --p99 90 --p99-9 150 --throughput 3e6 \
+  --force >/dev/null
+
+expect_exit 0 "progress.py emits table" \
+  python3 "$SUB/progress.py" \
+    --base "$SUB_FIX/history/mod_baseline.json" \
+    --curr "$SUB_FIX/history/mod_step_1.json"
+
+# gate: clear improvement → ACCEPT; identical → REJECT
+BEFORE_JSON="$SUB_FIX/samples/before.json"
+WIN_JSON="$SUB_FIX/samples/after_win.json"
+SAME_JSON="$SUB_FIX/samples/after_same.json"
+python3 - "$BEFORE_JSON" "$WIN_JSON" "$SAME_JSON" <<'PY'
+import json, sys, random
+random.seed(0)
+before_path, win_path, same_path = sys.argv[1:4]
+before = [100.0 + random.random() * 10 for _ in range(200)]
+win = [40.0 + random.random() * 5 for _ in range(200)]
+json.dump(before, open(before_path, "w"))
+json.dump(win, open(win_path, "w"))
+json.dump(before, open(same_path, "w"))
+PY
+
+expect_exit 0 "gate ACCEPT on large latency drop" \
+  python3 "$SUB/gate.py" \
+    --before "$SUB_FIX/samples/before.json" \
+    --after "$SUB_FIX/samples/after_win.json" \
+    --alpha 0.01 --min-median-improvement-pct 2.0
+
+expect_exit 1 "gate REJECT when distributions match" \
+  python3 "$SUB/gate.py" \
+    --before "$SUB_FIX/samples/before.json" \
+    --after "$SUB_FIX/samples/after_same.json" \
+    --alpha 0.01 --min-median-improvement-pct 2.0
+
+expect_exit 2 "doctor refuses missing root" \
+  bash "$SUB/doctor.sh" "$SUB_FIX/no-such-root"
+
+expect_exit 2 "audit-static requires a path" \
+  bash "$SUB/audit-static.sh"
+
+mkdir -p "$SUB_FIX/src"
+printf 'fn hot() { let _ = Vec::<u8>::new(); }\n' > "$SUB_FIX/src/lib.rs"
+expect_exit 0 "audit-static scans fixture" \
+  bash "$SUB/audit-static.sh" "$SUB_FIX/src"
+
+# bench-env scaffold + check
+expect_exit 0 "setup-bench-env scaffolds" \
+  bash "$SUB/setup-bench-env.sh" "$SUB_FIX" --force
+# minimal complete artifact for check
+mkdir -p "$SUB_FIX/.devflow"
+cat > "$SUB_FIX/.devflow/plan.md" <<'MD'
+---
+devflow: plan
+status: approved
+upstream: .devflow/research.md
+approval: granted
+bench_env: required
+latency_campaign: true
+updated: 2026-11-17
+---
+MD
+cat > "$SUB_FIX/.devflow/bench-env.md" <<'MD'
+---
+devflow: bench-env
+status: draft
+upstream: .devflow/plan.md
+approval: not-required
+updated: 2026-11-17
+---
+
+# Bench environment
+
+Profiles: baseline-zero and prod-like.
+Fixtures under .bench-env/fixtures/charge.json from recorded sandbox.
+Owned: none. Third-party: WireMock via Toxiproxy.
+MD
+printf '{}\n' > "$SUB_FIX/.bench-env/fixtures/charge.json"
+expect_exit 0 "check-bench-env accepts scaffold" \
+  bash "$SUB/check-bench-env.sh" "$SUB_FIX"
+expect_exit 2 "check-bench-env bad root is exit 2" \
+  bash "$SUB/check-bench-env.sh" "$SUB_FIX/nope-root"
+
 echo ""
 echo "script tests: $pass passed, $fail failed"
 [ "$fail" -eq 0 ] || exit 1

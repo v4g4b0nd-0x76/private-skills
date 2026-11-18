@@ -1,0 +1,23 @@
+[
+  { "query": "run a black box then gray box then white box security assessment of our live product at app.example.com", "should_trigger": true },
+  { "query": "authorized product security assess for company domain api.myco.io with Bright DAST and ROE", "should_trigger": true },
+  { "query": "scan our production IP 203.0.113.10 through Bright repeater, then whitebox the repo", "should_trigger": true },
+  { "query": "three-phase black gray white assessment of our company product, drop info findings", "should_trigger": true },
+  { "query": "we have written authorization — assess live staging.myco.com and require a restore plan before destructive tests", "should_trigger": true },
+  { "query": "harness a product security assess run: init allowlist, black unauth Bright, gray with creds, white code map", "should_trigger": true },
+  { "query": "do an OWASP-oriented live domain assessment for our SaaS then map the codebase for IDOR gaps", "should_trigger": true },
+  { "query": "start product-security-assess against payments.internal.myco and gate destructive behind RESTORE.md", "should_trigger": true },
+  { "query": "gray-box authenticated Bright scan of our company API after black-box recon, then whitebox", "should_trigger": true },
+  { "query": "install ffuf nmap nuclei and run allowlisted recon then full product security assess on app.example.com", "should_trigger": true },
+
+  { "query": "spin up Juice Shop and DVWA in an isolated lab and spawn bug bounty hunters", "should_trigger": false },
+  { "query": "generate a pytest BOLA attack suite for our local backend and probe localhost only", "should_trigger": false },
+  { "query": "inventory third-party Stripe and Twilio dependencies and load-test failure modes", "should_trigger": false },
+  { "query": "review this PR for security issues without running any scans", "should_trigger": false },
+  { "query": "write unit tests for our pricing functions", "should_trigger": false },
+  { "query": "explain what an IDOR is for training", "should_trigger": false },
+  { "query": "profile our Rust hot path for cache misses", "should_trigger": false },
+  { "query": "devflow-research this feature request into a plan", "should_trigger": false },
+  { "query": "set up Toxiproxy fault injection for the payments sandbox", "should_trigger": false },
+  { "query": "can you add rate limiting middleware to express", "should_trigger": false }
+]

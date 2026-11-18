@@ -440,6 +440,111 @@ bash "$ARENA/report.sh" demo >/dev/null 2>&1
 cd "$repo_root" || exit 1
 
 # ---------------------------------------------------------------------------
+section "product-security-assess: ROE, phase order, arm, Info filter"
+PSA="$skills/product-security-assess/scripts"
+PW="$work/psa-proj"; mkdir -p "$PW"; cd "$PW" || exit 1
+mkdir -p "$PW/fake-code"; echo 'ok' > "$PW/fake-code/README"
+
+expect_exit 0 "psa ensure-tools --print-path" bash "$PSA/ensure-tools.sh" --print-path
+# --check may be 0 or 1 depending on the host; it must not crash (exit 0/1 only)
+out="$(bash "$PSA/ensure-tools.sh" --check 2>&1)"; ec=$?
+if [ "$ec" -eq 0 ] || [ "$ec" -eq 1 ]; then ok "psa ensure-tools --check exits 0 or 1"
+else no "psa ensure-tools --check unexpected exit $ec"; fi
+
+expect_exit 0 "psa init creates workspace" \
+  bash "$PSA/assess.sh" demo --init --target app.example.com --extra-host 203.0.113.10
+expect_exit 2 "psa recon refuses before authorized" \
+  bash "$PSA/assess.sh" demo --recon --skip-ffuf --skip-nmap --skip-nuclei
+expect_exit 2 "psa black refuses before authorized" \
+  bash "$PSA/assess.sh" demo --phase black
+expect_exit 2 "psa arm refuses without restore steps" \
+  bash "$PSA/assess.sh" demo --arm-destructive
+
+# Authorize ROE and fill restore steps
+python3 - <<'PY'
+from pathlib import Path
+roe = Path(".product-security/demo/roe.md")
+text = roe.read_text().replace("authorized: false", "authorized: true")
+# credentials + code-root for later phases
+text = text.replace('credentials.ref: ""', 'credentials.ref: "/tmp/psa-creds.ref"')
+text = text.replace('code-root: ""', f'code-root: "{Path("fake-code").resolve()}"')
+roe.write_text(text)
+rest = Path(".product-security/demo/RESTORE.md")
+t = rest.read_text()
+t = t.replace("## Restore steps\n\n1. \n2. \n3. \n",
+              "## Restore steps\n\n1. Redeploy previous container image tag\n2. Restore DB from nightly dump\n3. Verify /health returns 200\n")
+rest.write_text(t)
+PY
+
+# After authorize: skipped recon still writes assets via explicit fixture for harness
+expect_exit 0 "psa black after authorize" bash "$PSA/assess.sh" demo --phase black
+# black may seed a minimal assets.json; ensure one exists for check-assess
+[ -f .product-security/demo/assets.json ] || printf '%s\n' '{"hosts":["app.example.com"],"urls":[],"notes":["fixture"]}' \
+  > .product-security/demo/assets.json
+expect_exit 0 "psa gray after black" bash "$PSA/assess.sh" demo --phase gray
+expect_exit 0 "psa white after gray" bash "$PSA/assess.sh" demo --phase white
+expect_exit 0 "psa arm with restore steps" bash "$PSA/assess.sh" demo --arm-destructive
+
+# Seed findings including Info that must be dropped
+cat > .product-security/demo/findings/black.jsonl <<'JSONL'
+{"severity":"high","class":"bola","endpoint":"GET /api/orders/123","title":"Cross-user order read","evidence":"bright:scan-1","confidence":"confirmed","phase":"black","impact":"PII","fix":"scope by owner"}
+{"severity":"info","class":"headers","endpoint":"GET /","title":"Missing X-Frame-Options","evidence":"bright:scan-1","confidence":"confirmed","phase":"black"}
+JSONL
+echo '{"severity":"medium","class":"authn","endpoint":"POST /login","title":"Weak session","evidence":"bright:scan-2","confidence":"unverified","phase":"gray"}' \
+  > .product-security/demo/findings/gray.jsonl
+: > .product-security/demo/findings/white.jsonl
+# Mark scans complete for consistency
+python3 - <<'PY'
+import json
+from pathlib import Path
+for name in ("black","gray"):
+    p = Path(f".product-security/demo/scans/{name}.json")
+    d = json.loads(p.read_text())
+    d["status"] = "complete"
+    d["scanIds"] = ["fixture-1"]
+    p.write_text(json.dumps(d, indent=2) + "\n")
+Path(".product-security/demo/whitebox/surface.md").write_text("# Whitebox surface\n\n## Entry points\n\n- GET /api/orders\n")
+Path(".product-security/demo/whitebox/gaps.md").write_text("# Whitebox gaps\n\n## Missing ownership checks\n\n- orders by id\n")
+PY
+
+expect_exit 0 "psa report drops Info" bash "$PSA/report.sh" demo
+if ! grep -q 'Severity: Info' .product-security/demo/report.md \
+   && grep -q '### FINDING-1' .product-security/demo/report.md \
+   && grep -q 'Info appendix' .product-security/demo/report.md; then
+  ok "report ranks non-Info and keeps Info appendix"
+else
+  no "report Info filtering failed"
+fi
+
+expect_exit 0 "psa check passes" bash "$PSA/check-assess.sh" demo
+
+# High without evidence must fail check
+python3 - <<'PY'
+from pathlib import Path
+p = Path(".product-security/demo/report.md")
+t = p.read_text()
+t = t.replace("Evidence: bright:scan-1", "Evidence: none")
+p.write_text(t)
+PY
+expect_exit 1 "psa check catches High without evidence" bash "$PSA/check-assess.sh" demo
+
+# Credential pattern must fail
+bash "$PSA/report.sh" demo >/dev/null 2>&1
+echo 'key = "AKIAIOSFODNN7EXAMPLE"' >> .product-security/demo/report.md
+expect_exit 1 "psa check catches live credential" bash "$PSA/check-assess.sh" demo
+
+# Fresh run: phase order gray before black refused
+expect_exit 0 "psa init second run" bash "$PSA/assess.sh" order --init --target only.example.com
+python3 - <<'PY'
+from pathlib import Path
+p = Path(".product-security/order/roe.md")
+p.write_text(p.read_text().replace("authorized: false", "authorized: true"))
+PY
+expect_exit 2 "psa gray before black refused" bash "$PSA/assess.sh" order --phase gray
+
+cd "$repo_root" || exit 1
+
+# ---------------------------------------------------------------------------
 section "rust-submicrosecond-refactor: baseline / gate / progress"
 SUB="$skills/rust-submicrosecond-refactor/scripts"
 SUB_FIX="$work/subus"
